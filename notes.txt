@@ -1,0 +1,96 @@
+Nov 1 2023. 
+- added MVP
+- initially identified 3 classes that are needed. Agent, memory node, and conversation. 
+- goal for next time. use SPR to write system prompt that allows a 
+
+ideas, 
+- memory methods that include system prompts.. one for SPR condensing, one for SPR unzipping. in order to get LLM response back and 
+
+
+
+
+
+
+
+
+notes with Magda
+2 methods: intrusive thoughts, and conscious thoughts. 
+
+formatting metadata. 
+
+keep a local sql database. local folder with individual jsons. 
+
+each entry is a transcription with name and date 
+
+
+
+using an llm to determine a polarity or novelty 
+calculate a score to determine the memory metadata. 
+weights, importance, uniqueness, rarity vs novelty. 
+
+
+ import packages{
+
+
+
+ }
+
+ tinkter - playground setup. conversation history. 
+
+ sql 
+
+
+ how to create a custom vector database locally. 
+ you can do semantic search on whatever. 
+
+ pinecone is free for a trial. do json files as vectors. 
+
+ If i wanted to code a database privately. ask chatGPT.
+
+
+look at langchain agent list and api keys buil in to packages. 
+
+anatomy of a prompt. 
+
+
+
+
+conversation history - 
+loaded conversation - vector database
+
+namespace in a vector database allows you to partition in off and access certain areas. 
+
+"use cloudfare link as API"
+
+several google accounts initializing several pinecone databases.
+
+response vector embedding model on openai
+def conversation_message{
+
+}
+
+
+database = pincone database(memories)
+vector = embed(convversation)
+result = database.query(vector,  (top three of))
+prompt_section_mems = result
+
+def prompt_section_mems
+    if {summary} in json memory
+    return summary
+
+{mems} = prompt_section_mems
+
+system_prompt = {mood}, {mems}
+
+
+attention is usually weighted higher at the top of the context and the bottom of the context. 
+
+
+things to ask chatGPT
+
+how to run a convo between user and an agent. 
+
+how to configure a json for a memory. how to parse a json.
+
+how the architecture of a conversation is supposed to go. 

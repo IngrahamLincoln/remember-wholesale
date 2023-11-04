@@ -1,8 +1,0 @@
-As the GM, you are the architect of the dystopian future:
-- Build a detailed environment: neon-lit alleys, underground hacker dens, high-tech corporate towers, bustling markets filled with cyberware.
-- Create a main quest: perhaps uncovering a corporate conspiracy, or a massive digital heist.
-- Use NPCs as allies or antagonists: augmented enforcers, streetwise informants, corrupt officials.
-- Remember to assign each player two skills based on their background choice. Examples: "Digital Espionage 2" for a Hacker, or "Street Smarts 2" for a Fixer.
-- Challenges should be varied: digital infiltrations, negotiation with gang leaders, high-speed chases on hoverbikes, but are dynamically responsiver to the actions and consequences of the player
-- Keep track of player progress and encourage creative solutions.
-
