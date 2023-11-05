@@ -18,6 +18,14 @@ tokenizer = tiktoken.get_encoding('cl100k_base')
 
 #length function for tokenizer
 def tiktoken_len(conversation):
+    """Calculates the total number of tokens in a conversation.
+
+    Args:
+        conversation (list of dict): A list of message dictionaries to calculate tokens for.
+
+    Returns:
+        int: The total token count for the conversation.
+    """
     total_tokens = 0
     for message in conversation:
         tokens = tokenizer.encode(
@@ -29,7 +37,23 @@ def tiktoken_len(conversation):
 
 
 class Agent:
+    """Represents an agent that handles messages and maintains a conversation history.
+
+    Attributes:
+        name (str): The name of the agent.
+        history_file (str): Path to the file where the conversation history is saved.
+        chat (ChatOpenAI): An instance of the ChatOpenAI class used for generating responses.
+        message_history (list): A list of messages that make up the conversation history.
+    """
+
     def __init__(self, name, prompt, history_file="history.json"):
+        """Initializes the Agent with a name, a starting prompt, and a history file.
+
+        Args:
+            name (str): The name of the agent.
+            prompt (str): An initial system message or prompt to start the conversation.
+            history_file (str): The file path for storing the conversation history.
+        """     
         self.name = name
         self.history_file = history_file
         self.chat = ChatOpenAI(streaming=True,
@@ -40,6 +64,14 @@ class Agent:
         self.message_history.insert(0, SystemMessage(content=prompt))
 
     def message(self, user_message):
+        """Processes a user message and generates a response.
+
+        Args:
+            user_message (str): The message input from the user.
+
+        Returns:
+            str: The generated response from the agent.
+        """
         with get_openai_callback() as cb:  # Use the context manager to count tokens
             self.message_history.append(HumanMessage(content=user_message))
             resp = self.chat(self.message_history)
@@ -49,6 +81,14 @@ class Agent:
         return resp.content
 
     def save_conversation(self):
+        """
+        Saves the current state of the conversation to a JSON file.
+
+        This method iterates through the message history, which consists of various message objects,
+        and transforms them into a dictionary format suitable for JSON serialization. Each message
+        is categorized by its type (System, User, AI) and contains relevant data such as content and token count.
+        The resulting JSON structure is then written to the history file.
+        """
         with open(self.history_file, 'w') as f:
             # Convert Message objects to dictionaries and save as JSON
             history = []
@@ -70,6 +110,17 @@ class Agent:
             json.dump(history, f, indent=4)
 
     def load_conversation(self):
+        """
+        Loads the conversation history from a JSON file.
+
+        This method checks if the history file exists and is not empty, then reads the JSON content.
+        It converts the JSON array back into a list of message objects, preserving the original types
+        (System, User, AI). If the JSON is invalid or the file is empty, it returns an empty list
+        and prints an error message.
+
+        Returns:
+            list: A list of message objects reconstructed from the JSON history file.
+        """
         if os.path.exists(self.history_file) and os.path.getsize(self.history_file) > 0:
             with open(self.history_file, 'r') as f:
                 try:
@@ -86,6 +137,14 @@ class Agent:
             return []
 
 def append_to_json_file(filename, message_data):
+    """Appends a new message to a JSON file.
+
+    If the file does not exist or is empty, it creates a new file and adds the message data.
+
+    Args:
+        filename (str): The name of the file to append the message data to.
+        message_data (dict): The message data to append.
+    """
     # Check if the file exists and contains data
     if os.path.exists(filename) and os.path.getsize(filename) > 0:
         with open(filename, 'r+') as f:
@@ -104,11 +163,25 @@ def append_to_json_file(filename, message_data):
 
 
 def clear_file(filename):
+    """Clears the content of the specified file.
+
+    Args:
+        filename (str): The name of the file to clear.
+    """
     open(filename, 'w').close()
 
 
 
 def chunk_and_summarize(filename="history.json"):
+    """Processes the messages in the history file and prepares them for summarization.
+
+    Args:
+        filename (str): The name of the file to process messages from.
+
+    Returns:
+        str: Concatenated string of all messages that have not been summarized.
+    """
+
     # Load the message history
     with open(filename, 'r') as f:
         messages = json.load(f)
@@ -133,11 +206,29 @@ def chunk_and_summarize(filename="history.json"):
 
 
 def summarize_chunk(agent, chunk):
+    """Generates a summary for a chunk of text using an agent.
+
+    Args:
+        agent (Agent): The agent to use for summarizing the text.
+        chunk (str): The chunk of text to summarize.
+
+    Returns:
+        str: The summary of the provided chunk.
+    """
     # Get the summary from the agent
     summary = agent.message(chunk)
     return summary
 
 def save_summary(summary):
+    """
+    Saves the summary with a unique identifier and timestamp.
+
+    Args:
+        summary (str): The summary text to be saved.
+
+    Returns:
+        dict: A dictionary with the summary id, timestamp, author, and the summary text.
+    """
     # Each summary is stored with a timestamp
     summary_data = {
         "id": str(uuid.uuid4()),
@@ -148,6 +239,16 @@ def save_summary(summary):
     return summary_data
 
 def save_message(message, author, token_count):
+    """Creates a dictionary to save message data.
+
+    Args:
+        message (str): The content of the message.
+        author (str): The name of the author of the message.
+        token_count (int): The token count of the message.
+
+    Returns:
+        dict: A dictionary containing the message data.
+    """
     message_id = str(uuid.uuid4())
     # Create a dictionary with the message data
     message_data = {
@@ -161,6 +262,15 @@ def save_message(message, author, token_count):
     return message_data
 
 def run_conversation(agent, summarizer_agent, convo_filename="conversation.json", summary_file="summarizer_history.json"):
+    """
+    The main loop for running the conversation, handling user input, generating agent responses, summarizing the conversation, and saving the messages and summaries.
+
+    Args:
+        agent (Agent): The conversational agent to interact with the user.
+        summarizer_agent (Agent): The agent responsible for summarizing the conversation.
+        convo_filename (str): The filename for saving the conversation.
+        summary_file (str): The filename for saving summaries of the conversation.
+    """   
     clear_file(convo_filename)  # Clear the conversation file
     conversation = []
     while True:
