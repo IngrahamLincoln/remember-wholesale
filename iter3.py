@@ -79,7 +79,8 @@ class Agent:
             self.save_conversation()
         return resp.content
     def summarize(self, chunk):
-        resp = self.chat(chunk)
+        self.message_history.append(HumanMessage(content=chunk))
+        resp = self.chat(self.message_history)
         return resp.content
         
 
@@ -175,7 +176,7 @@ def clear_file(filename):
 
 
 
-def check_to_summarize(filename="history.json"):
+def check_to_summarize(filename="conversation.json", token_bound = 20):
     """Processes the messages in the history file and prepares them for summarization.
 
     Args:
@@ -193,14 +194,14 @@ def check_to_summarize(filename="history.json"):
     # Calculate the total token count for unsummarized messages
     total_tokens = sum(msg['tokens'] for msg in messages if not msg.get('summarized', False))
 
-    if total_tokens < 2000:
+    if total_tokens < token_bound:
         return False
     
     # Initialize an empty string to store all content if the token threshold is met
     all_content = ''
 
     # Only proceed if the total token count is 2000 or more
-    if total_tokens >= 2000:
+    if total_tokens >= token_bound:
         # Filter out messages that have been summarized or have empty content
         filtered_messages = [msg['content'] for msg in messages if not msg.get('summarized', False) and msg['content'].strip()]
 
@@ -249,13 +250,14 @@ def save_message(message, author, token_count):
     Returns:
         dict: A dictionary containing the message data.
     """
+    # Get random unique id
     message_id = str(uuid.uuid4())
     # Create a dictionary with the message data
     message_data = {
         "id": message_id,
         "name": author,
         "datetime": datetime.now().isoformat(),
-        "message": message,
+        "content": message,
         "tokens": token_count,
         "summarized": False 
     }
@@ -295,7 +297,7 @@ def run_conversation(agent, summarizer_agent, convo_filename="conversation.json"
         append_to_json_file(convo_filename, agent_message_data)
 
         chunk = check_to_summarize()
-        if chunk:
+        if isinstance(chunk, str) and chunk:
             summary = summarizer_agent.summarize(chunk)
             summary_data = save_summary(summary)
             append_to_json_file(summary_file, summary_data)
