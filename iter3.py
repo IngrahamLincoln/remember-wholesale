@@ -77,8 +77,11 @@ class Agent:
             resp = self.chat(self.message_history)
             self.message_history.append(resp)
             self.save_conversation()
-
         return resp.content
+    def summarize(self, chunk):
+        resp = self.chat(chunk)
+        return resp.content
+        
 
     def save_conversation(self):
         """
@@ -172,7 +175,7 @@ def clear_file(filename):
 
 
 
-def chunk_and_summarize(filename="history.json"):
+def check_to_summarize(filename="history.json"):
     """Processes the messages in the history file and prepares them for summarization.
 
     Args:
@@ -181,43 +184,40 @@ def chunk_and_summarize(filename="history.json"):
     Returns:
         str: Concatenated string of all messages that have not been summarized.
     """
+    # ... [omitted docstring and comments for brevity]
 
     # Load the message history
     with open(filename, 'r') as f:
         messages = json.load(f)
 
-    # Filter out messages that have been summarized or have empty content
-    filtered_messages = [msg['content'] for msg in messages if not msg.get('summarized', False) and msg['content'].strip()]
+    # Calculate the total token count for unsummarized messages
+    total_tokens = sum(msg['tokens'] for msg in messages if not msg.get('summarized', False))
 
-    # Concatenate all the content fields into a single string
-    all_content = ' '.join(filtered_messages)
+    if total_tokens < 2000:
+        return False
+    
+    # Initialize an empty string to store all content if the token threshold is met
+    all_content = ''
 
-    # Update the 'summarized' status for all messages that have been concatenated
-    for msg in messages:
-        if not msg.get('summarized', False) and msg['content'].strip():
-            msg['summarized'] = True
+    # Only proceed if the total token count is 2000 or more
+    if total_tokens >= 2000:
+        # Filter out messages that have been summarized or have empty content
+        filtered_messages = [msg['content'] for msg in messages if not msg.get('summarized', False) and msg['content'].strip()]
 
-    # Save the updated messages back to the file
+        # Concatenate all the content fields into a single string
+        all_content = ' '.join(filtered_messages)
+
+        # Update the 'summarized' status for all messages that have been concatenated
+        for msg in messages:
+            if not msg.get('summarized', False) and msg['content'].strip():
+                msg['summarized'] = True
+
+    # Save the updated messages back to the file regardless of token count
     with open(filename, 'w') as f:
         json.dump(messages, f, indent=4)
 
     return all_content
 
-
-
-def summarize_chunk(agent, chunk):
-    """Generates a summary for a chunk of text using an agent.
-
-    Args:
-        agent (Agent): The agent to use for summarizing the text.
-        chunk (str): The chunk of text to summarize.
-
-    Returns:
-        str: The summary of the provided chunk.
-    """
-    # Get the summary from the agent
-    summary = agent.message(chunk)
-    return summary
 
 def save_summary(summary):
     """
@@ -234,7 +234,7 @@ def save_summary(summary):
         "id": str(uuid.uuid4()),
         "datetime": datetime.now().isoformat(),
         "name": "summarizer agent",
-        "summary": summary,
+        "content": summary,
     }
     return summary_data
 
@@ -294,9 +294,9 @@ def run_conversation(agent, summarizer_agent, convo_filename="conversation.json"
         agent_message_data = save_message(agent_response, "Agent", agent_token_count)
         append_to_json_file(convo_filename, agent_message_data)
 
-        chunk = chunk_and_summarize()
+        chunk = check_to_summarize()
         if chunk:
-            summary = summarize_chunk(summarizer_agent, chunk)
+            summary = summarizer_agent.summarize(chunk)
             summary_data = save_summary(summary)
             append_to_json_file(summary_file, summary_data)
 
