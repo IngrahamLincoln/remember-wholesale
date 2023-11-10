@@ -12,14 +12,21 @@ info = client.files.create(
   file=open("info.txt", "rb"),
   purpose="assistants"
 )
-
+prag = client.files.create(
+  file=open("prag.txt", "rb"),
+  purpose="assistants"
+)
+hist = client.files.create(
+  file=open("history.json", "rb"),
+  purpose="assistants"
+)
 #print(f"file object\n\n{info}")
 
 file_assistant = client.beta.assistants.create(
     name="File Assistant",
     instructions="you have access to files to answer questions about them.",
     tools=[{"type": "retrieval"}],
-    file_ids =[info.id],
+    file_ids =[info.id, prag.id, hist.id],
     model="gpt-4-1106-preview"
 )
 
