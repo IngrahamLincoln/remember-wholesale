@@ -22,17 +22,19 @@ hist = client.files.create(
 )
 #print(f"file object\n\n{info}")
 
-file_assistant = client.beta.assistants.create(
-    name="File Assistant",
-    instructions="you have access to files to answer questions about them.",
-    tools=[{"type": "retrieval"}],
-    file_ids =[info.id, prag.id, hist.id],
-    model="gpt-4-1106-preview"
-)
+# file_assistant = client.beta.assistants.create(
+#     name="File Assistant",
+#     instructions="you have access to files to answer questions about them.",
+#     tools=[{"type": "retrieval"}],
+#     file_ids =[info.id, prag.id, hist.id],
+#     model="gpt-4-1106-preview"
+# )
+file_assistant = client.beta.assistants.retrieve("asst_6zQYOHIKKxI2ocqdzOb7AweF")
 
 #print(f"file_assistant object\n\n{file_assistant}\n\n")
 
 thread = client.beta.threads.create()
+print(f"\n\nTHREAD ID\n\n{thread.id}")
 
 completed_statuses = {"requires_action", "cancelled", "failed", "completed", "expired"}
 

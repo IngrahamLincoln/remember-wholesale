@@ -22,14 +22,14 @@ file_assistant = client.beta.assistants.create(
     model="gpt-4-1106-preview"
 )
 
-print(f"file_assistant object\n\n{file_assistant}")
+print(f"file_assistant object\n\n{file_assistant}\n\n")
 
 thread = client.beta.threads.create()
 
 initial_message = client.beta.threads.messages.create(
     thread_id=thread.id,
     role="user",
-    content="I need to find out what the secret word in the file you have access to is"
+    content="I need to find out what the secret word in the file you have access to is."
 )
 
 completed_statuses = {"requires_action", "cancelled", "failed", "completed", "expired"}
