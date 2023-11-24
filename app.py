@@ -1,3 +1,7 @@
+# Run with "chainlit run app.py -w"
+# Also ensure youre in the openai-env by typing "source openai-env/bin/activate"
+# To deactivate type "deactivate"
+
 import chainlit as cl
 import sys
 import os
@@ -8,30 +12,30 @@ load_dotenv()
 client = OpenAI(
    api_key = os.getenv('OPEN_API_KEY'),
  )
-info = client.files.create(
-  file=open("info.txt", "rb"),
+#info = client.files.create(
+#  file=open("info.txt", "rb"),
+#  purpose="assistants"
+#)
+wikifile = client.files.create(
+  file=open("wiki.txt", "rb"),
   purpose="assistants"
 )
-prag = client.files.create(
-  file=open("prag.txt", "rb"),
-  purpose="assistants"
-)
-hist = client.files.create(
-  file=open("history.json", "rb"),
-  purpose="assistants"
-)
+#hist = client.files.create(
+#  file=open("history.json", "rb"),
+#  purpose="assistants"
+#)
 #print(f"file object\n\n{info}")
 
-# file_assistant = client.beta.assistants.create(
-#     name="File Assistant",
-#     instructions="you have access to files to answer questions about them.",
-#     tools=[{"type": "retrieval"}],
-#     file_ids =[info.id, prag.id, hist.id],
-#     model="gpt-4-1106-preview"
-# )
-file_assistant = client.beta.assistants.retrieve("asst_6zQYOHIKKxI2ocqdzOb7AweF")
+file_assistant = client.beta.assistants.create(
+     name="File Assistant",
+     instructions="you have access to files to answer questions about them.",
+     tools=[{"type": "retrieval"}],
+     file_ids =[wikifile.id],
+     model="gpt-4-1106-preview"
+ )
+#file_assistant = client.beta.assistants.retrieve("asst_6zQYOHIKKxI2ocqdzOb7AweF")
 
-#print(f"file_assistant object\n\n{file_assistant}\n\n")
+print(f"file_assistant object\n\n{file_assistant}\n\n")
 
 thread = client.beta.threads.create()
 print(f"\n\nTHREAD ID\n\n{thread.id}")
@@ -42,13 +46,13 @@ completed_statuses = {"requires_action", "cancelled", "failed", "completed", "ex
 @cl.on_message
 
 async def main(message: cl.Message):
-    #Your logic will be here. 
+    
     #print(f"\n\nHERE IS THE MESSAGE OBJECT\n\n{message}")
     thread_message = client.beta.threads.messages.create(
         thread.id,
         role="user",
         #content=cl.Message.content,
-        content = message
+        content = message.content
     )
 
     run = client.beta.threads.runs.create(
