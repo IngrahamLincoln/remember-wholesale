@@ -1,6 +1,11 @@
+#requirements: pip install chainlit openai dotenv
+
 # Run with "chainlit run app.py -w"
-# Also ensure youre in the openai-env by typing "source openai-env/bin/activate"
-# To deactivate type "deactivate"
+
+
+#ignore
+# ignoreAlso ensure youre in the openai-env by typing "source openai-env/bin/activate"
+# ignoreTo deactivate type "deactivate"
 
 import chainlit as cl
 import sys
@@ -9,33 +14,57 @@ import time
 from dotenv import load_dotenv
 from openai import OpenAI
 load_dotenv()
+
+
+
 client = OpenAI(
    api_key = os.getenv('OPEN_API_KEY'),
  )
-#info = client.files.create(
-#  file=open("info.txt", "rb"),
-#  purpose="assistants"
-#)
-wikifile = client.files.create(
-  file=open("wiki.txt", "rb"),
+
+playerfile = client.files.create(
+  file=open("player.txt", "rb"),
   purpose="assistants"
 )
-#hist = client.files.create(
-#  file=open("history.json", "rb"),
-#  purpose="assistants"
-#)
-#print(f"file object\n\n{info}")
 
-file_assistant = client.beta.assistants.create(
-     name="File Assistant",
-     instructions="you have access to files to answer questions about them.",
-     tools=[{"type": "retrieval"}],
-     file_ids =[wikifile.id],
+#print(f"file object\n\n{info}")
+def get_hand() -> str:
+    hand = ##
+    return hand
+
+
+tools_list = [{
+    "type": "function",
+    "function": {
+
+        "name": "get_hand",
+        "description": "Retrieve the values of the cards that are in your hand",
+        #"parameters": {
+        #    "type": "object",
+        #    "properties": {
+        #        "symbol": {
+        #            "type": "string",
+        #            "description": "The ticker symbol of the stock"
+        #       }
+        #    },
+        #   "required": ["symbol"]
+        #}
+    }
+}]
+
+
+
+Card_shark = client.beta.assistants.create(
+     name="Card Shark",
+     instructions="You are a blackjack player. you have access to tools that when called give you your blackjack hand. after that function is called you will decide to hit, split, or whatever.",
+     tools=tools_list,
+     file_ids =[playerfile.id],
      model="gpt-4-1106-preview"
  )
-#file_assistant = client.beta.assistants.retrieve("asst_6zQYOHIKKxI2ocqdzOb7AweF")
 
-print(f"file_assistant object\n\n{file_assistant}\n\n")
+#This way I'm not creating a new assistant every time I run the program. 
+#file_assistant = client.beta.assistants.retrieve("asst_kVuy2dCgbwnLIhS2NB252cqM")
+
+print(f"file_assistant object\n\n{Card_shark}\n\n")
 
 thread = client.beta.threads.create()
 print(f"\n\nTHREAD ID\n\n{thread.id}")
@@ -57,8 +86,8 @@ async def main(message: cl.Message):
 
     run = client.beta.threads.runs.create(
     thread_id=thread.id,
-    assistant_id=file_assistant.id,
-    instructions="Please address the user as Ian. The user has a premium account."
+    assistant_id=Card_shark.id,
+    instructions="Please address the user as Ian."
     )
 
 
